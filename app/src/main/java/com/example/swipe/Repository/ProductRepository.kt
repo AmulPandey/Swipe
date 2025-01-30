@@ -2,7 +2,14 @@ package com.example.swipe.Repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
+import com.example.swipe.NetworkUtils
 import com.example.swipe.Networking.ProductApiService
+import com.example.swipe.Room.ProductDatabase
+import com.example.swipe.Room.ProductEntity
+import com.example.swipe.Room.toProduct
+import com.example.swipe.model.screen1.Product
+import com.example.swipe.model.screen1.toEntity
 import com.example.swipe.model.screen2.ProductResponse
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -15,7 +22,45 @@ class ProductRepository(
     private val apiService: ProductApiService,
     private val context: Context
 ) {
-    suspend fun fetchProducts() = apiService.getProducts()
+    private val productDao = ProductDatabase.getDatabase(context).productDao()
+
+
+    suspend fun fetchProducts(): List<Product> {
+        return if (NetworkUtils.isOnline(context)) {
+            try {
+                val response = apiService.getProducts()
+
+                val productEntities = response.map { it.toEntity() }
+
+                productDao.deleteAllProducts()
+                productDao.insertProducts(productEntities)
+
+                return productEntities.map { it.toProduct() }
+            } catch (e: Exception) {
+                Log.e("ProductRepository", "Error fetching products: ${e.message}")
+                return productDao.getAllProducts().map { it.toProduct() }
+            }
+        } else {
+            return productDao.getAllProducts().map { it.toProduct() }
+        }
+    }
+
+
+
+    suspend fun syncLocalDataToServer() {
+        if (!NetworkUtils.isOnline(context)) return
+
+        val localProducts = productDao.getAllProducts()
+        for (product in localProducts) {
+            addProduct(
+                product.product_name,
+                product.product_type,
+                product.price.toString(),
+                product.tax.toString(),
+                null
+            )
+        }
+    }
 
     suspend fun addProduct(
         name: String,
@@ -37,6 +82,15 @@ class ProductRepository(
                 val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
                 MultipartBody.Part.createFormData("files[]", file.name, requestFile)
             }
+
+            val productEntity = ProductEntity(
+                image = "android.resource://com.example.swipe/res/drawable/def_img.png",
+                price = price.toDouble(),
+                product_name = name,
+                product_type = type,
+                tax = tax.toDouble()
+            )
+            productDao.insertProduct(productEntity)
 
 
             val response = apiService.addProduct(

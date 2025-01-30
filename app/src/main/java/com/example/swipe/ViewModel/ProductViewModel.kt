@@ -1,6 +1,5 @@
 package com.example.swipe.ViewModel
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -25,18 +24,25 @@ class ProductViewModel(private val repository: ProductRepository) : ViewModel() 
 
     init {
         fetchProducts()
+        syncLocalData()
     }
 
     fun fetchProducts() {
         viewModelScope.launch {
             _loading.value = true
             try {
-                // Fetch from local Room database first
+
                 _products.value = repository.fetchProducts()
             } catch (e: Exception) {
                 Log.e("ProductViewModel", "Error fetching products: ${e.message}")
             }
             _loading.value = false
+        }
+    }
+
+    fun syncLocalData() {
+        viewModelScope.launch {
+            repository.syncLocalDataToServer()
         }
     }
 

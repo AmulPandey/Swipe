@@ -20,6 +20,7 @@ import org.koin.androidx.viewmodel.ext.android.getViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -27,6 +28,8 @@ class MainActivity : ComponentActivity() {
 
             NavGraph(navController, viewModel)
         }
+
+
     }
 }
 

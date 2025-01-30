@@ -45,13 +45,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.swipe.NetworkUtils
 import com.example.swipe.model.screen2.Result
 import com.example.swipe.ViewModel.ProductViewModel
-import com.google.android.gms.cast.framework.media.ImagePicker
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -207,6 +205,8 @@ fun AddProductScreen(
                                 return@Button
                             }
 
+
+
                             isUploading = true
 
                             coroutineScope.launch {
@@ -232,7 +232,12 @@ fun AddProductScreen(
                                         }
                                     }
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    if (!NetworkUtils.isOnline(context)) {
+                                        Toast.makeText(context, "You Are Offline, Product Saved Offline", Toast.LENGTH_SHORT).show()
+                                    }
+                                    else {
+                                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
                                     isUploading = false
                                 }
                             }
