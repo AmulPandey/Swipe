@@ -2,6 +2,10 @@
 
 **Swipe** is an Android app designed for managing products with a modern and user-friendly interface. It leverages advanced features like local database storage, network requests, and image uploads. The app uses **Kotlin** for development, **Koin** for dependency injection, **Retrofit** for network communication, and **Room** for local data persistence.
 
+## ScreenShot
+![WhatsApp Image](https://github.com/AmulPandey/Swipe/blob/main/WhatsApp%20Image%202025-01-31%20at%204.39.22%20AM.jpeg)
+
+
 ## Features
 
 - **Product Management**: Add, fetch, and manage products with details like name, type, price, tax, and image.
